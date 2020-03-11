@@ -129,8 +129,8 @@ def plot_field(field: Callable[[np.ndarray], np.ndarray], points: np.ndarray, ax
     ax.quiver(x, y, u, v)
 
 def main():
-    # field = plate_with_hole_shear_displacement
-    field = zero_field
+    field = plate_with_hole_shear_displacement
+    # field = zero_field
     stop_condition = bounding_box_stop
     start = np.array([9, 8.7, 0], dtype=np.float64)
     direction = False
