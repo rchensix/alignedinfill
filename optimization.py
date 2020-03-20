@@ -11,17 +11,17 @@ def brute_force_1d(func: Callable[[np.ndarray], np.ndarray], domain: np.ndarray)
     ind = np.unravel_index(argind, val.shape)
     return val[ind], domain[ind]
 
-def optimizer_test():
+def optimization_test():
     def f(x):
         return x**3
     val, arg = brute_force_1d(f, np.linspace(-2, 2, 10))
     tol = 1e-12
-    assert np.abs(val + 8) < tol, 'minimum is at -8, not ' + val
-    assert np.abs(arg + 2) < tol, 'argmin is at -2, not ' + arg
+    assert np.abs(val + 8) < tol, 'minimum is at -8, not {}'.format(val)
+    assert np.abs(arg + 2) < tol, 'argmin is at -2, not {}'.format(arg)
     print('passed optimizer_test')
 
 def main():
-    optimizer_test()
+    optimization_test()
 
 if __name__ == '__main__':
     main()

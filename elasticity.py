@@ -44,11 +44,34 @@ def rotate_str_vector_z(str_vector: np.ndarray, angle_rad: float) -> np.ndarray:
                     [0, 0, 1]])
     return str_matrix_to_vector(rot @ mat @ np.transpose(rot))
 
+# Transforms compliance matrix by rotating about z axis (positive CCW)
+# See Section 3.2.11 of http://solidmechanics.org/text/Chapter3_2/Chapter3_2.htm
+def rotate_compliance_matrix_z(compliance: np.ndarray, angle_rad: float) -> np.ndarray:
+    # TODO: fix this, the indices in the link above are not the same as the ones in this file
+    raise Exception('Implementation is wrong, do not use')
+    assert compliance.shape == (6,6), 'compliance matrix shape must be (6, 6), not {}'.format(compliance.shape)
+    c = np.cos(-angle_rad)
+    s = np.sin(-angle_rad)
+    kinv = np.array([[c**2, s**2, 0, 0, 0, 2*c*s],
+                    [s**2, c**2, 0, 0, 0, -2*c*s],
+                    [0, 0, 1, 0, 0, 0],
+                    [0, 0, 0, c, s, 0],
+                    [0, 0, 0, -s, c, 0],
+                    [-c*s, c*s, 0, 0, 0, c**2 - s**2]])
+    return np.transpose(kinv) @ compliance @ kinv
 
 def strain_energy_density(compliance_matrix: np.ndarray, stress_vector: np.ndarray) -> float:
     strain_vector = compliance_matrix @ stress_vector
-    u = strain_vector.dot(stress_vector) + strain_vector[3:].dot(stress_vector[3:])
+    u = 0.5*(strain_vector.dot(stress_vector) + strain_vector[3:].dot(stress_vector[3:]))
     return u
+
+def von_mises_stress(stress_vector: np.ndarray) -> float:
+    return np.sqrt(0.5*((stress_vector[0] - stress_vector[1])**2 + \
+                        (stress_vector[1] - stress_vector[2])**2 + \
+                        (stress_vector[2] - stress_vector[0])**2 + \
+                        6*stress_vector[4]**2 + \
+                        6*stress_vector[5]**2 + \
+                        6*stress_vector[6]**2))
 
 def elasticity_test():
     # some test values
@@ -109,4 +132,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    
