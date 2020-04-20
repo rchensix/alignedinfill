@@ -63,7 +63,7 @@ class AlignedInfillGenerator:
     def is_index_inbounds(self, index: int) -> bool:
         return index >= 0 and index < self.grid_spec.num_pts_x * self.grid_spec.num_pts_y
     
-    def generate(self) -> List[np.ndarray]:
+    def generate(self, seed_points: np.ndarray=None) -> List[np.ndarray]:
         self.streamlines.clear()
         # Create a BooleanGrid of visited spots
         self.visited = np.full(self.grid_spec.num_pts_x*self.grid_spec.num_pts_y, False, dtype=bool)
@@ -75,19 +75,33 @@ class AlignedInfillGenerator:
                 self.pts[index] = self.index_to_world(index)
         self.vectors = self.alignment_field(self.pts)
         self.magnitude = np.linalg.norm(self.vectors, axis=1)
-        sorted_indices = np.flip(np.argsort(self.magnitude))
-        for i in range(sorted_indices.size):
-            index = sorted_indices[i]
-            if self.is_valid_start_point(index):
-                line1 = generate_streamline(self.alignment_field, self.pts[index], True, self.stop_streamline_condition, self.step_size, self.max_steps)
-                line2 = generate_streamline(self.alignment_field, self.pts[index], False, self.stop_streamline_condition, self.step_size, self.max_steps)
+        if not isinstance(seed_points, type(None)):
+            if seed_points.shape == (3,): seed_points = seed_points.reshape((1, 3))
+            for i in range(seed_points.shape[0]):
+                line1 = generate_streamline(self.alignment_field, seed_points[i, :], True, self.out_of_bounds, self.step_size, self.max_steps)
+                line2 = generate_streamline(self.alignment_field, seed_points[i, :], False, self.out_of_bounds, self.step_size, self.max_steps)
                 # merge streamlines into one
                 line = np.zeros((line1.shape[0] + line2.shape[0] - 1, 3))
                 line[:line1.shape[0], :] = np.flip(line1, axis=0)
                 line[line1.shape[0]:, :] = line2[1:]
-                self.visited[index] = True
-                self.mark_line_visited(line)
                 self.streamlines.append(line)
+        else:
+            sorted_indices = np.flip(np.argsort(self.magnitude))
+            for i in range(sorted_indices.size):
+                index = sorted_indices[i]
+                if self.is_valid_start_point(index):
+                    line1 = generate_streamline(self.alignment_field, self.pts[index], True, self.stop_streamline_condition, self.step_size, self.max_steps)
+                    line2 = generate_streamline(self.alignment_field, self.pts[index], False, self.stop_streamline_condition, self.step_size, self.max_steps)
+                    # merge streamlines into one
+                    line = np.zeros((line1.shape[0] + line2.shape[0] - 1, 3))
+                    line[:line1.shape[0], :] = np.flip(line1, axis=0)
+                    line[line1.shape[0]:, :] = line2[1:]
+                    self.visited[index] = True
+                    self.mark_line_visited(line)
+                    self.streamlines.append(line)
+
+    def out_of_bounds(self, point: np.ndarray) -> bool:
+        return not self.in_bounds(point)
     
     def stop_streamline_condition(self, point: np.ndarray) -> bool:
         # stop generating streamline if the point goes
@@ -166,8 +180,7 @@ class AlignedInfillGenerator:
             # TODO: plot boundary
             pass
         if alignment_field_on:
-            # TODO: plot alignment field
-            pass
+            plot_field(self.alignment_field, self.pts, ax)
         if debug_mode_on:
             # Visited squares plot
             fig = plt.figure()
