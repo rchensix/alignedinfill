@@ -5,11 +5,13 @@
 This module tests generating streamlines from an analytical vector field.
 '''
 
+import sys
+from typing import Callable, List
+import unittest
+
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
-import sys
-from typing import Callable, List
 
 directory = r'D:\OneDrive - Leland Stanford Junior University\Research\Projects\Aligned Infills\Code\alignedinfill'
 sys.path.insert(1, directory)
@@ -29,21 +31,22 @@ def bounding_box_stop(point: np.ndarray) -> bool:
     xmax, ymax, zmax = (10, 10, 10)
     return x <= xmin or x >= xmax or y <= ymin or y >= ymax or z <= zmin or z >= zmax
 
-def main():
-    field = plate_with_hole_shear_displacement
-    # field = center_zero_field
-    stop_condition = bounding_box_stop
-    start = np.array([9, 8.7, 0], dtype=np.float64)
-    direction = False
-    streamline = generate_streamline(field, start, direction, stop_condition, step_size=0.1, max_steps=1000)
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.set_aspect('equal')
-    x, y = np.meshgrid(np.linspace(-10, 10, 20), np.linspace(-10, 10, 20))
-    points = np.concatenate((x.reshape((-1, 1)), y.reshape((-1, 1))), axis=1)
-    plot_streamline(streamline, ax)
-    plot_field(field, points, ax)
-    plt.show()
+class TestAnalyticalFieldStreamline(unittest.TestCase):
+    def test_plate_with_hole_shear_displacement(self):
+        field = plate_with_hole_shear_displacement
+        # field = center_zero_field
+        stop_condition = bounding_box_stop
+        start = np.array([9, 8.7, 0], dtype=np.float64)
+        direction = False
+        streamline = generate_streamline(field, start, direction, stop_condition, step_size=0.1, max_steps=1000)
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.set_aspect('equal')
+        x, y = np.meshgrid(np.linspace(-10, 10, 20), np.linspace(-10, 10, 20))
+        points = np.concatenate((x.reshape((-1, 1)), y.reshape((-1, 1))), axis=1)
+        plot_streamline(streamline, ax)
+        plot_field(field, points, ax)
+        plt.show()
 
 if __name__ == '__main__':
-    main()
+    unittest.main()

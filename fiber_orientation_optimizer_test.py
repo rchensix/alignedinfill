@@ -5,11 +5,13 @@
 This module tests preferred fiber orientation on analytical stress fields.
 '''
 
+import sys
+from typing import Callable
+import unittest
+
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
-import sys
-from typing import Callable
 
 directory = r'D:\OneDrive - Leland Stanford Junior University\Research\Projects\Aligned Infills\Code\alignedinfill'
 sys.path.insert(1, directory)
@@ -28,36 +30,34 @@ def objective_functor(compliance_matrix: np.ndarray, stress_vector: np.ndarray) 
         return result
     return f
 
-def fiber_orientation_optimizer_test():
-    xvec = np.linspace(-3, 3, 20)
-    yvec = np.linspace(-3, 3, 20)
-    xlist = []
-    ylist = []
-    ulist = []
-    vlist = []
-    compliance = constants_to_compliance_matrix(3300, 2400, 1900, 0.33, 0.30, 0.33, 1000, 900, 850)
-    # loop over points in a grid
-    # find optimal orientation at every point
-    theta_domain = np.linspace(-np.pi/2, np.pi/2, 181)
-    for x in np.nditer(xvec):
-        for y in np.nditer(yvec):
-            if np.sqrt(x**2 + y**2) < 1: continue
-            stress = plate_with_hole_tension_stress(np.array([x, y]))
-            # stress = uniaxial_tension_stress(np.array([x, y]))
-            func = objective_functor(compliance, stress)
-            u, theta = brute_force_1d(func, theta_domain)
-            xlist.append(x)
-            ylist.append(y)
-            ulist.append(u*np.cos(theta))
-            vlist.append(u*np.sin(theta))
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.set_aspect('equal')
-    ax.quiver(xlist, ylist, ulist, vlist)
-    plt.show()
-
-def main():
-    fiber_orientation_optimizer_test()
+class TestFiberOrientationOptimizer(unittest.TestCase):
+    def fiber_orientation_optimizer_test(self):
+        xvec = np.linspace(-3, 3, 20)
+        yvec = np.linspace(-3, 3, 20)
+        xlist = []
+        ylist = []
+        ulist = []
+        vlist = []
+        compliance = constants_to_compliance_matrix(3300, 2400, 1900, 0.33, 0.30, 0.33, 1000, 900, 850)
+        # loop over points in a grid
+        # find optimal orientation at every point
+        theta_domain = np.linspace(-np.pi/2, np.pi/2, 181)
+        for x in np.nditer(xvec):
+            for y in np.nditer(yvec):
+                if np.sqrt(x**2 + y**2) < 1: continue
+                stress = plate_with_hole_tension_stress(np.array([x, y]))
+                # stress = uniaxial_tension_stress(np.array([x, y]))
+                func = objective_functor(compliance, stress)
+                u, theta = brute_force_1d(func, theta_domain)
+                xlist.append(x)
+                ylist.append(y)
+                ulist.append(u*np.cos(theta))
+                vlist.append(u*np.sin(theta))
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.set_aspect('equal')
+        ax.quiver(xlist, ylist, ulist, vlist)
+        plt.show()
 
 if __name__ == '__main__':
-    main()
+    unittest.main()
