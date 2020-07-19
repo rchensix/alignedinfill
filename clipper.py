@@ -15,7 +15,6 @@ import warnings
 
 directory = r'D:\OneDrive - Leland Stanford Junior University\Research\Projects\Aligned Infills\Code\alignedinfill'
 sys.path.insert(1, directory)
-from visualization import plot_polygon 
 
 # polygon is (N, 2) or (N, 3) ndarray where N is number of vertices. polygon is assumed to be closed. 
 #    Any 3D data is discarded.
@@ -43,6 +42,9 @@ def point_in_polygon(polygon: np.ndarray, point: np.ndarray) -> Union[bool, np.n
 
 def inset_polygon(polygon: np.ndarray, inset_amount: float) -> List:
     assert inset_amount > 0, "inset_amount must be greater than 0 but is currently {}".format(inset_amount)
+    if polygon.shape[1] == 3:
+        warnings.warn('polygon contains 3D data; ignoring z component.')
+        polygon = np.copy(polygon)[:, :2]
     assert polygon.shape[1] == 2, "polygon must be 2D and have shape (n, 2) where n is number of vertices"
     polygon_scaled = pyclipper.scale_to_clipper(polygon)
     inset_scaled = pyclipper.scale_to_clipper(-inset_amount)
@@ -52,33 +54,8 @@ def inset_polygon(polygon: np.ndarray, inset_amount: float) -> List:
     solution = pyclipper.scale_from_clipper(solution_scaled)
     return solution
 
-def inset_test():
-    dumbbell = np.array([
-        [3, 3],
-        [3, -3],
-        [0.5, -3],
-        [0.5, -0.5],
-        [-0.5, -0.5],
-        [-0.5, -3],
-        [-3, -3],
-        [-3, 3],
-        [-0.5, 3],
-        [-0.5, 0.5],
-        [0.5, 0.5],
-        [0.5, 3]
-    ])
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.set_aspect('equal')
-    plot_polygon(dumbbell, ax)
-    for inset_amount in [0.5, 1, 1.5]:
-        solution = inset_polygon(dumbbell, inset_amount)
-        for sol in solution:
-            plot_polygon(np.array(sol), ax)
-    plt.show()
-
 def main():
-    inset_test()
+    pass
 
 if __name__ == '__main__':
     main()

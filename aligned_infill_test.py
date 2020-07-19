@@ -5,6 +5,7 @@
 This module tests generating aligned infills
 '''
 
+import os
 import sys
 import unittest
 
@@ -15,6 +16,7 @@ sys.path.insert(1, directory)
 from aligned_infill import GridSpec, AlignedInfillGenerator
 from analytical_fields import cantilever_vertical_load_stress, plate_with_hole_tension_stress, simply_supported_uniform_load_stress
 from elasticity import constants_to_compliance_matrix, rotate_str_vector_z, strain_energy_density, str_vector_to_matrix
+import numerical_fields
 from optimization import brute_force_1d
 from visualization import plot_field
 
@@ -138,11 +140,13 @@ class TestAlignedInfill(unittest.TestCase):
         generator.plot()
 
     def test_aligned_infill_hole_in_tensile_field_principal_stress(self):
-        gridspec = GridSpec(-3, 3, 40, -3, 3, 40)
+        width = 5
+        num_grid_pts = 40
+        gridspec = GridSpec(-width/2, width/2, num_grid_pts, -width/2, width/2, num_grid_pts)
         def square_boundary_with_hole(point: np.ndarray) -> bool:
             x = point[0]
             y = point[1]
-            return x >= -3 and x <= 3 and y >= -3 and y <= 3 and np.sqrt(x**2 + y**2) >= 1
+            return x >= -width/2 and x <= width/2 and y >= -width/2 and y <= width/2 and np.sqrt(x**2 + y**2) >= 1
         def alignment_field(points: np.ndarray) -> np.ndarray:
             if points.shape == (3,): 
                 pts = points.copy().reshape((1, -1))
@@ -165,6 +169,46 @@ class TestAlignedInfill(unittest.TestCase):
         seeds = np.array([
             [0, 1.0, 0],
             [0, -1.0, 0]
+        ])
+        generator.generate(seeds)
+        for i, streamline in enumerate(generator.streamlines):
+            out_path = os.path.join(directory, 'hole_in_plate', 'streamline{}.npy'.format(i))
+            np.save(out_path, streamline)
+        generator.plot()
+
+    def test_aligned_infill_fem(self):
+        # Read fem result of 3 point bending
+        result_path = r'D:\OneDrive - Leland Stanford Junior University\Research\Projects\Aligned Infills\FEM\three_point_bend_stress.vtu'
+        sxx, syy, sxy = numerical_fields.rbf_stress_interpolator(result_path)
+        gridspec = GridSpec(-60e-3, 60e-3, 121, -12.5e-3, 12.5e-3, 26)
+        def rectangular_boundary(point: np.ndarray) -> bool:
+            x = point[0]
+            y = point[1]
+            return x >= -60e-3 and x <= 60e-3 and y >= -12.5e-3 and y <= 12.5e-3
+        def alignment_field(points: np.ndarray) -> np.ndarray:
+            if points.shape == (3,): 
+                pts = points.copy().reshape((1, -1))
+            else:
+                pts = points
+            # align with principal stress direction
+            stress = np.zeros((pts.shape[0], 6))
+            stress[:, 0] = sxx(pts[:, 0], pts[:, 1], pts[:, 2])
+            stress[:, 1] = syy(pts[:, 0], pts[:, 1], pts[:, 2])
+            stress[:, 3] = sxy(pts[:, 0], pts[:, 1], pts[:, 2])
+            eps = 1e-3  # prevent division by zero
+            theta = 0.5*np.arctan2(2*stress[:, 3], stress[:, 0] - stress[:, 1] + eps)
+            if points.shape == (3,):
+                result = np.linalg.norm(stress)*np.array([np.cos(theta[0]), np.sin(theta[0]), 0])
+            else:
+                result = np.zeros(points.shape)
+                result[:, 0] = np.linalg.norm(stress)*np.cos(theta)
+                result[:, 1] = np.linalg.norm(stress)*np.sin(theta)
+            return result
+        step_size = 0.02
+        separation = 0.25
+        generator = AlignedInfillGenerator(gridspec, rectangular_boundary, alignment_field, separation, step_size, 1000)
+        seeds = np.array([
+            [1e-6, -12.49e-3, 0],
         ])
         generator.generate(seeds)
         generator.plot()

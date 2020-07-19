@@ -25,18 +25,8 @@ def rbf_stress_interpolator(path: str, function: str='gaussian') -> Tuple:
            scipy.interpolate.Rbf(x, y, z, syy, function=function), \
            scipy.interpolate.Rbf(x, y, z, sxy, function=function) 
 
-def meshio_test():
-    sxx, syy, sxy = rbf_stress_interpolator(r'D:\OneDrive - Leland Stanford Junior University\Research\Projects\Aligned Infills\FEM\three_point_bend_stress.vtu')
-    x, y = np.meshgrid(np.linspace(-60e-3, 60e-3, 121), np.linspace(-12.5e-3, 12.5e-3, 26))
-    sxx_grid = sxx(x, y, np.zeros_like(x))
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.set_aspect('equal')
-    ax.imshow(sxx_grid)
-    plt.show()
-
 def main():
-    meshio_test()
+    pass
 
 if __name__ == '__main__':
     main()

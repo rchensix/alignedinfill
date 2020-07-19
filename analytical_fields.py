@@ -211,17 +211,8 @@ def center_zero_field(point: np.ndarray) -> np.ndarray:
         result[:, 1] = v
         return result
 
-def analytical_fields_test():
-    tol = 1e-12
-    # Check circular tensile field
-    s = plate_with_hole_tension_stress(np.array([0, 1, 0]))
-    s_golden = 3
-    assert np.abs(s[0] - s_golden) < tol, 'plate_with_hole_tension_stress test exceeds tolerance of {}'.format(tol)
-    print('passed plate_with_hole_tension_stress test')
-    print('passed all analytical_fields tests')
-
 def main():
-    analytical_fields_test()
+    pass
 
 if __name__ == '__main__':
     main()
