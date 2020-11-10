@@ -15,7 +15,7 @@ import clipper
 from visualization import plot_polygon 
 
 class TestClipper(unittest.TestCase):
-    def test_inset(self):
+    def DISABLED_test_inset(self):
         dumbbell = np.array([
             [3, 3],
             [3, -3],
@@ -90,12 +90,44 @@ class TestClipper(unittest.TestCase):
         plot_polygon(region1, ax)
         plot_polygon(region2, ax)
         plot_polygon(region3, ax)
+        np.save(os.path.join(directory, 'region0.npy'), region0)
+        np.save(os.path.join(directory, 'region1.npy'), region1)
+        np.save(os.path.join(directory, 'region2.npy'), region2)
+        np.save(os.path.join(directory, 'region3.npy'), region3)
+        # plt.show()
         insets = np.arange(0.25, 2, 0.25)
+        # nozzle_diam_inch = 0.019685
+        # insets = np.arange(nozzle_diam_inch/2, 2, nozzle_diam_inch)
+        counter = 0
         for inset in insets:
             for region in [region0, region1, region2, region3]:
                 solution = clipper.inset_polygon(region, inset)
                 for sol in solution:
                     plot_polygon(np.array(sol), ax)
+                    out_path = os.path.join(directory, 'polygons', '{}.npy'.format(counter))
+                    # np.save(out_path, np.array(sol))
+                    counter += 1
+        plt.show()
+
+    def DISABLED_test_simply_supported_beam(self):
+        region = np.array([[0, 0, 0],
+                           [-0.25, 0, 0],
+                           [-0.25, 5, 0],
+                           [-30, 5, 0],
+                           [-30, -5, 0],
+                           [30, -5, 0],
+                           [30, 5, 0],
+                           [0.25, 5, 0],
+                           [0.25, 0, 0]])
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.set_aspect('equal')
+        plot_polygon(region, ax)
+        insets = np.arange(0.25, 2, 0.25)
+        for inset in insets:
+            solution = clipper.inset_polygon(region, inset)
+            for sol in solution:
+                plot_polygon(np.array(sol), ax)
         plt.show()
 
 if __name__ == '__main__':
