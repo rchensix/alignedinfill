@@ -50,39 +50,41 @@ class TestClipper(unittest.TestCase):
         # Region 0: top half
         region0 = np.zeros((streamline0.shape[0] + 4, 3))
         region0[0:-4] = streamline0
-        region0[-4:] = np.array([[-2.5, 0.13291783, 0],
-                                 [-2.5, 2.5, 0],
-                                 [2.5, 2.5, 0],
-                                 [2.5, 0.13291783, 0]])
+        region0[-4:] = np.array([[-3.5, 0.10338015, 0],
+                                 [-3.5, 2.5, 0],
+                                 [3.5, 2.5, 0],
+                                 [3.5, 0.10338015, 0]])
         # Region 1: bottom half
         region1 = np.zeros((streamline1.shape[0] + 4, 3))
         region1[0:-4] = streamline1
-        region1[-4:] = np.array([[-2.5, -0.13291783, 0],
-                                 [-2.5, -2.5, 0],
-                                 [2.5, -2.5, 0],
-                                 [2.5, -0.13291783, 0]])   
+        region1[-4:] = np.array([[-3.5, -0.10338015, 0],
+                                 [-3.5, -2.5, 0],
+                                 [3.5, -2.5, 0],
+                                 [3.5, -0.10338015, 0]])   
         # Region 2: left half
-        region2 = np.zeros((90 + 50 + 90 + 2, 3))
-        region2[0] = np.array([-2.5, -0.13291738, 0])
-        region2[1:91] = streamline1[-1:-91:-1]
-        arc2 = np.zeros((50, 3))
-        theta = np.linspace(220*np.pi/180, 140*np.pi/180, 50)
+        kNumPtsFromStreamlineToInclude = 145  # this is a user parameter to achieve conformal boundary
+        kNumPtsInArc = 50
+        region2 = np.zeros((2 * kNumPtsFromStreamlineToInclude + kNumPtsInArc + 2, 3))
+        region2[0] = np.array([-3.5, -0.10338015, 0])
+        region2[1:kNumPtsFromStreamlineToInclude+1] = streamline1[-1:-(kNumPtsFromStreamlineToInclude+1):-1]
+        arc2 = np.zeros((kNumPtsInArc, 3))
+        theta = np.linspace(220*np.pi/180, 140*np.pi/180, kNumPtsInArc)
         arc2[:, 0] = 1.02*np.cos(theta)
         arc2[:, 1] = 1.02*np.sin(theta)
-        region2[91:141] = arc2
-        region2[141:231] = streamline0[-90::1]
-        region2[231] = np.array([-2.5, 0.13291738, 0])
+        region2[kNumPtsFromStreamlineToInclude+1:kNumPtsFromStreamlineToInclude+kNumPtsInArc+1] = arc2
+        region2[kNumPtsFromStreamlineToInclude+kNumPtsInArc+1:-1] = streamline0[-kNumPtsFromStreamlineToInclude::1]
+        region2[-1] = np.array([-3.5, 0.10338015, 0])
         # Region 3: right half
-        region3 = np.zeros((90 + 50 + 90 + 2, 3))
-        region3[0] = np.array([2.5, -0.13291738, 0])
-        region3[1:91] = streamline1[:90]
-        arc3 = np.zeros((50, 3))
-        theta = np.linspace(-40*np.pi/180, 40*np.pi/180, 50)
+        region3 = np.zeros_like(region2)
+        region3[0] = np.array([3.5, -0.10338015, 0])
+        region3[1:kNumPtsFromStreamlineToInclude+1] = streamline1[:kNumPtsFromStreamlineToInclude]
+        arc3 = np.zeros((kNumPtsInArc, 3))
+        theta = np.linspace(-40*np.pi/180, 40*np.pi/180, kNumPtsInArc)
         arc3[:, 0] = 1.02*np.cos(theta)
         arc3[:, 1] = 1.02*np.sin(theta)
-        region3[91:141] = arc3
-        region3[141:231] = streamline0[89::-1]
-        region3[231] = np.array([2.5, 0.13291738, 0])
+        region3[kNumPtsFromStreamlineToInclude+1:kNumPtsFromStreamlineToInclude+kNumPtsInArc+1] = arc3
+        region3[kNumPtsFromStreamlineToInclude+kNumPtsInArc+1:-1] = streamline0[kNumPtsFromStreamlineToInclude-1::-1]
+        region3[-1] = np.array([3.5, 0.10338015, 0])
         fig = plt.figure()
         ax = fig.add_subplot(111)
         ax.set_aspect('equal')

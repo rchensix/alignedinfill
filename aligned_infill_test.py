@@ -140,13 +140,15 @@ class TestAlignedInfill(unittest.TestCase):
         generator.plot()
 
     def test_aligned_infill_hole_in_tensile_field_principal_stress(self):
+        length = 7
         width = 5
-        num_grid_pts = 40
-        gridspec = GridSpec(-width/2, width/2, num_grid_pts, -width/2, width/2, num_grid_pts)
+        num_grid_pts_x = 40
+        num_grid_pts_y = 56
+        gridspec = GridSpec(-length/2, length/2, num_grid_pts_x, -width/2, width/2, num_grid_pts_y)
         def square_boundary_with_hole(point: np.ndarray) -> bool:
             x = point[0]
             y = point[1]
-            return x >= -width/2 and x <= width/2 and y >= -width/2 and y <= width/2 and np.sqrt(x**2 + y**2) >= 1
+            return x >= -length/2 and x <= length/2 and y >= -width/2 and y <= width/2 and np.sqrt(x**2 + y**2) >= 1
         def alignment_field(points: np.ndarray) -> np.ndarray:
             if points.shape == (3,): 
                 pts = points.copy().reshape((1, -1))
