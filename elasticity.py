@@ -55,8 +55,8 @@ def rotate_compliance_matrix_z(compliance: np.ndarray, angle_rad: float) -> np.n
     kinv = np.array([[c**2, s**2, 0, 0, 0, 2*c*s],
                     [s**2, c**2, 0, 0, 0, -2*c*s],
                     [0, 0, 1, 0, 0, 0],
-                    [0, 0, 0, c, s, 0],
-                    [0, 0, 0, -s, c, 0],
+                    [0, 0, 0, c, -s, 0],  # NOTE: typo in notes above
+                    [0, 0, 0, s, c, 0],
                     [-c*s, c*s, 0, 0, 0, c**2 - s**2]])
     return np.transpose(kinv) @ compliance @ kinv
 
@@ -69,9 +69,9 @@ def von_mises_stress(stress_vector: np.ndarray) -> float:
     return np.sqrt(0.5*((stress_vector[0] - stress_vector[1])**2 + \
                         (stress_vector[1] - stress_vector[2])**2 + \
                         (stress_vector[2] - stress_vector[0])**2 + \
+                        6*stress_vector[3]**2 + \
                         6*stress_vector[4]**2 + \
-                        6*stress_vector[5]**2 + \
-                        6*stress_vector[6]**2))
+                        6*stress_vector[5]**2))
 
 def elasticity_test():
     # some test values

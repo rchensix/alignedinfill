@@ -5,16 +5,17 @@
 Tools for polygon testing and insetting polygons for GCode generation.
 '''
 
+# import sys
+from typing import List, Union
+import warnings
+
 from matplotlib.path import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pyclipper
-import sys
-from typing import List, Union
-import warnings
 
-directory = r'D:\OneDrive - Leland Stanford Junior University\Research\Projects\Aligned Infills\Code\alignedinfill'
-sys.path.insert(1, directory)
+# directory = r'D:\OneDrive - Leland Stanford Junior University\Research\Projects\Aligned Infills\Code\alignedinfill'
+# sys.path.insert(1, directory)
 
 # polygon is (N, 2) or (N, 3) ndarray where N is number of vertices. polygon is assumed to be closed. 
 #    Any 3D data is discarded.
